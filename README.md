@@ -11,7 +11,7 @@ Download an executable from the latest [release](https://github.com/ammilam/midi
 To run the project, use the following command:
 
 ```
-./midi-generator-<arch> -- [--scale SCALE] [--phrase_length PHRASE_LENGTH] [--note_lengths NOTE_LENGTHS] [--min_octave MIN_OCTAVE] [--max_octave MAX_OCTAVE] [--file_name FILE_NAME]
+./midi-generator-<arch> --scale SCALE --phrase_length PHRASE_LENGTH --note_lengths NOTE_LENGTHS --min_octave MIN_OCTAVE --max_octave MAX_OCTAVE --file_name FILE_NAME
 ```
 
 The following options are available:
@@ -26,7 +26,7 @@ The following options are available:
 For example, to generate a MIDI file with a C minor scale, a phrase length of 16, and possible note lengths of 2, 4, and 8, use the following command:
 
 ```
-./midi-generator-<arch> -- --scale "C minor" --phrase_length 16 --note_lengths "2,4,8"
+./midi-generator-<arch> --scale "C minor" --phrase_length 16 --note_lengths "2,4,8"
 ```
 
 ### Running From Source
@@ -36,7 +36,7 @@ For example, to generate a MIDI file with a C minor scale, a phrase length of 16
 3. Run `npm install --global pkg` to install the `pkg` package for creating an executable.
 
 ```
-npm start -- [--scale SCALE] [--phrase_length PHRASE_LENGTH] [--note_lengths NOTE_LENGTHS] [--min_octave MIN_OCTAVE] [--max_octave MAX_OCTAVE] [--file_name FILE_NAME]
+npm start --scale SCALE --phrase_length PHRASE_LENGTH --note_lengths NOTE_LENGTHS --min_octave MIN_OCTAVE --max_octave MAX_OCTAVE --file_name FILE_NAME
 ```
 
 The following options are available:
@@ -51,5 +51,5 @@ The following options are available:
 For example, to generate a MIDI file with a C minor scale, a phrase length of 16, and possible note lengths of 2, 4, and 8, use the following command:
 
 ```
-npm start -- --scale "C minor" --phrase_length 16 --note_lengths "2,4,8"
+npm start --scale "C minor" --phrase_length 16 --note_lengths "2,4,8"
 ```
