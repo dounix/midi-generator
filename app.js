@@ -4,6 +4,7 @@ import fs from 'fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
+// get command line arguments
 const argv = yargs(hideBin(process.argv)).argv
 
 // get current date
@@ -11,26 +12,28 @@ const date = new Date();
 const dateStr = date.toISOString()
 
 
-const fileName = argv.file_name || `midi-file-${dateStr}.mid`
+// corresponds to how many notes can potentially sit on top of each other, potentially representing a chord
+const noteSpread = argv.note_spread || 1;
 
 // get command line arguments
 const scale = argv.scale || "C major";
 console.log(`scale: ${scale}`)
 
-const phraseLength = argv.phrase_length || 32;
-console.log(`phrase length: ${phraseLength}`)
+// set phrase length
+const phraseNotesCount = argv.phrase_notes_count || 32;
+console.log(`phrase notes count: ${phraseNotesCount}`)
 
-const noteLengths = (argv.note_lengths || ["16"]); // this isnt working
+// set note lengths
+const noteLengths = [(argv.note_lengths || "16")].map(l => `${l}`)
 console.log(`note lengths: ${noteLengths}`)
 
+// set octave range
 const minOctave = argv.min_octave || 1;
 console.log(`min octave: ${minOctave}`)
 const maxOctave = argv.max_octave || 5;
 console.log(`max octave: ${maxOctave}`)
 
-// variable to parse in comma separated list of noteLengths and surround each value with doubel quotes
 const [key, mode] = scale.split(" ");
-
 
 // get range of notes in a scale
 const range = Scale.rangeOf(scale);
@@ -39,13 +42,15 @@ const range = Scale.rangeOf(scale);
 const keyRange = range(`${key}${minOctave}`, `${key}${maxOctave}`)
 console.log(`key range: ${keyRange}`)
 
+// set file name
+const fileName = argv.file_name || `${key}-${mode}-midi-file-${dateStr}.mid`
+
 // function that returns random slice from an array with a min and max length
-const randomSlice = (arr, min = 1, max = 1) => {
+const randomSlice = (arr, min = 1, max = noteSpread) => {
   const len = Math.floor(Math.random() * (max - min + 1)) + min;
   const start = Math.floor(Math.random() * (arr.length - len + 1));
   return arr.slice(start, start + len);
 };
-
 
 // function that returns a random note from a range
 const randomNote = (range) => {
@@ -59,7 +64,7 @@ const track = new MidiWriter.Track();
 // generate a beat
 function generateBeat() {
   let beat = []
-  for (let i = 0; i < phraseLength; i++) {
+  for (let i = 0; i < phraseNotesCount; i++) {
     beat.push(randomNote(keyRange))
   }
   return beat
