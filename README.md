@@ -16,12 +16,13 @@ To run the project, use the following command:
 
 The following options are available:
 
-- `--scale`: The scale to use for generating the notes. Defaults to "C major".
-- `--phrase_notes_count`: The length of the phrase to generate. Defaults to 32.
-- `--note_lengths`: The possible durations for the notes, separated by commas. Defaults to ["16"].
-- `--min_octave`: The minimum octave to use for generating the notes. Defaults to 1.
-- `--max_octave`: The maximum octave to use for generating the notes. Defaults to 5.
-- `--file_name`: The name of the MIDI file to generate. Defaults to "midi-file-[current date].mid".
+- `note_spread`: corresponds to how many notes can potentially sit on top of each other, potentially representing a chord (default: 1)
+- `scale`: the scale to use (default: "C major")
+- `phrase_notes_count`: the number of notes in each phrase (default: 32)
+- `note_lengths`: an array of note lengths (default: [16])
+- `min_octave`: the minimum octave range (default: 1)
+- `max_octave`: the maximum octave range (default: 5)
+- `file_name`: the name of the MIDI file to generate (default: "<key>-<mode>-midi-file-<current date>.mid")
 
 For example, to generate a MIDI file with a C minor scale, a phrase length of 16, and possible note lengths of 2, 4, and 8, use the following command:
 
@@ -41,12 +42,13 @@ npm start --scale SCALE --phrase_notes_count phrase_notes_count --note_lengths N
 
 The following options are available:
 
-- `--scale`: The scale to use for generating the notes. Defaults to "C major".
-- `--phrase_notes_count`: The length of the phrase to generate. Defaults to 32.
-- `--note_lengths`: The possible durations for the notes, separated by commas. Defaults to ["16"].
-- `--min_octave`: The minimum octave to use for generating the notes. Defaults to 1.
-- `--max_octave`: The maximum octave to use for generating the notes. Defaults to 5.
-- `--file_name`: The name of the MIDI file to generate. Defaults to "midi-file-[current date].mid".
+- `note_spread`: corresponds to how many notes can potentially sit on top of each other, potentially representing a chord (default: 1)
+- `scale`: the scale to use (default: "C major")
+- `phrase_notes_count`: the number of notes in each phrase (default: 32)
+- `note_lengths`: an array of note lengths (default: [16])
+- `min_octave`: the minimum octave range (default: 1)
+- `max_octave`: the maximum octave range (default: 5)
+- `file_name`: the name of the MIDI file to generate (default: "<key>-<mode>-midi-file-<current date>.mid")
 
 For example, to generate a MIDI file with a C minor scale, a phrase length of 16, and possible note lengths of 2, 4, and 8, use the following command:
 
