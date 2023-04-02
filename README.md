@@ -1,6 +1,6 @@
 # MIDI Generator
 
-This is a Node.js project that generates a random MIDI file with a given scale, phrase length, and note lengths. It uses the `tonal` and `midi-writer-js` packages to generate MIDI notes and write them to a file.
+This is a Node.js project that generates a random MIDI file with a given scale, phrase length, and note lengths. It uses the [tonal](https://www.npmjs.com/package/tonal) and [midi-writer-js](https://www.npmjs.com/package/midi-writer-js) packages to generate MIDI notes and write them to a file.
 
 ## Usage
 
@@ -25,7 +25,9 @@ To run the project, use the following command:
 --note_spread=<NOTE_SPREAD>
 ```
 
-The following options are available:
+#### Options
+
+The following options are available as command-line arguments:
 
 - `--note_spread`: This option sets how many notes can potentially sit on top of each other, representing a chord. The default value is 1.
 - `--phrase_count`: This option sets how many phrases are in the MIDI file. The default value is 1.
@@ -39,7 +41,7 @@ The following options are available:
 
 #### Duration Parameters
 
-Since this is a wrapper around midi-writer-js, this application accepts the following duration options:
+Since this is a wrapper around [midi-writer-js](https://www.npmjs.com/package/midi-writer-js), this application accepts the following duration options:
 
 - 1 : whole
 - 2 : half
