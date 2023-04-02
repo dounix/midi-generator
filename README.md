@@ -40,9 +40,9 @@ The following options are available as command-line arguments:
 - `--file_name`: the name of the MIDI file to generate (default: "<key>-<mode>-midi-file-<current date>.mid")
 - `--output_path`: the path to output midi files to
 
-#### Duration Parameters
+#### Note Length Parameters
 
-Since this is a wrapper around [midi-writer-js](https://www.npmjs.com/package/midi-writer-js), this application accepts the following duration options:
+Since this is a wrapper around [midi-writer-js](https://www.npmjs.com/package/midi-writer-js), this application accepts the following note_lengths options:
 
 - 1 : whole
 - 2 : half
