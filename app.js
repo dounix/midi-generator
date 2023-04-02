@@ -23,7 +23,7 @@ const phraseNotesCount = argv.phrase_notes_count || 32;
 console.log(`phrase notes count: ${phraseNotesCount}`)
 
 // set note lengths
-const noteLengths = [(argv.note_lengths || "16")].map(l => `${l}`)
+const noteLengths = [(argv.note_durations || "16")].map(l => `${l}`)
 console.log(`note lengths: ${noteLengths}`)
 
 // set octave range
