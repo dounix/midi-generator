@@ -26,8 +26,5 @@
       "node16-win-x64"
     ],
     "outputPath": "./"
-  },
-  "bin": {
-    "myapp": "app.js"
   }
 }
