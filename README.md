@@ -38,6 +38,7 @@ The following options are available as command-line arguments:
 - `--key`: This option sets the key of the scale. The default value is "C".
 - `--mode`: This option sets the mode of the scale. The default value is "major".
 - `--file_name`: the name of the MIDI file to generate (default: "<key>-<mode>-midi-file-<current date>.mid")
+- `--output_path`: the path to output midi files to
 
 #### Duration Parameters
 
@@ -70,7 +71,8 @@ Since this is a wrapper around [midi-writer-js](https://www.npmjs.com/package/mi
 
 This will generate a MIDI file with 2 phrases, each phrase in C minor containing 16 notes with a random chord of up to 2 notes, with note lengths of 1/8 or 1/4 of a beat, in a D# minor scale with notes ranging from octave 2 to octave 4, and with the name "my-midi-file.mid".
 
-Note: All options are optional. If no option is specified, the default values will be used.
+Note: All arguments are optional. If no option is specified, the default values will be used.
+
 
 ### Building From Source
 
