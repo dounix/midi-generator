@@ -27,6 +27,9 @@ jobs:
     - run: npm ci
     - run: npm install pkg -g
     - run: pkg .
+    - name: make binaries executable
+      run: |
+        chmod +x ${{ github.event.repository.name }}*
 
     - name: Create Release
       id: create_release
