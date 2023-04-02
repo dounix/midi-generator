@@ -2,7 +2,7 @@
   "name": "midi-generator",
   "version": "1.0.0",
   "description": "A node module that generates random midi files",
-  "main": "index.js",
+  "main": "app.js",
   "type": "module",
   "scripts": {
     "start": "node app.js"
