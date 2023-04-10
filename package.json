@@ -9,6 +9,7 @@
   "author": "Andrew Milam",
   "license": "ISC",
   "dependencies": {
+    "easymidi": "^3.0.1",
     "midi-writer-js": "^2.1.4",
     "pkg": "^5.8.1",
     "tonal": "^4.14.0",
