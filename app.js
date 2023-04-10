@@ -134,10 +134,6 @@ async function sendMidi(notes, velocity = 127, channel = 1, interval) {
     }, interval)
   }
 }
-// function that sets a repeat interval for a function based off of a bpm and note length
-const setRepeatInterval = (fn, interval) => {
-  setInterval(fn, interval)
-}
 
 // function that creates randomly sized smaller arrays that fluctuate in length between 1 and the noteSpread value
 function randomIndex(items) {
@@ -186,21 +182,28 @@ const randomDuration = () => {
   return duration
 }
 
+// function that generates a stream of midi notes
 function streamMidi() {
+  // get a random duration
   let duration = randomDuration()
+  // get the number of notes per beat
   let subdivision = getNotesPerBeat(duration)
+  // calculate the interval between notes
   const interval = (1000 * 60) / (bpm * subdivision) // get note frequency in ms
   setInterval(() => {
+    // get a range of random notes
     let randomNotes = randomNote(keyRange)
+    // get the notes midi data
     let midiNotes = randomNotes['midiNotes']
+    // send the midi notes
     sendMidi(midiNotes, velocity, channel, interval)
   }, interval)
 }
 
 
+// check if the user wants to generate a midi stream
 if (generateMidiStream == "true") {
   // function to continuously call sendMidi to generate a stream of midi notes
-  // need to figure out how to call this function continuously until ctrl+c is pressed
   streamMidi()
 } else {
   // loop through the phrase count and add notes to the track
@@ -224,13 +227,12 @@ if (outputPath.charAt(outputPath.length - 1) !== '/') {
   outputPath = outputPath + '/'
 }
 
+// if not streaming midi, write a midi file
 if (generateMidiStream == "false") {
   const p = `${outputPath}${fileName}`
 
   // build the midi file
   let write = new MidiWriter.Writer(track).buildFile()
-  let stream = new MidiWriter.Writer(track).stdout()
-
   fs.writeFileSync(p, write, 'binary')
 
   if (fs.existsSync(p)) {
