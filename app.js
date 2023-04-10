@@ -22,8 +22,13 @@ console.log(`bpm: ${bpm}`)
 const phraseCount = argv.phrase_count || 1;
 console.log(`phrase count: ${phraseCount}`)
 
-const velocity = 127
-const channel = 1
+// set velocity
+const velocity = argv.velocity || 127
+console.log(`velocity: ${velocity}`)
+
+//
+const channel = argv.midi_channel || 1
+console.log(`midi channel: ${channel}`)
 
 // set phrase length
 const phraseNotesCount = argv.phrase_notes_count || 32;
@@ -214,6 +219,7 @@ if (generateMidiStream == "true") {
         new MidiWriter.NoteEvent({
           pitch: note,
           duration: duration,
+          velocity: velocity,
         })
       );
     }

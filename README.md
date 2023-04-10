@@ -1,6 +1,6 @@
 # MIDI Generator
 
-This is a Node.js project that generates a random MIDI file with a given scale, phrase length, and note lengths. It uses the [tonal](https://www.npmjs.com/package/tonal) and [midi-writer-js](https://www.npmjs.com/package/midi-writer-js) packages to generate MIDI notes and write them to a file.
+This is a Node.js project that generates a random MIDI file or streams with a given scale, phrase length, and note lengths. It uses the [tonal](https://www.npmjs.com/package/tonal) and [midi-writer-js](https://www.npmjs.com/package/midi-writer-js) packages to generate MIDI notes and write them to a file.
 
 ## Usage
 
@@ -27,19 +27,30 @@ To run the project, use the following command:
 
 #### Options
 
-The following options are available as command-line arguments:
+Parameters:
+To generate MIDI files, the app.js file has various command line parameters. The parameters are:
+- note_spread: corresponds to how many notes can potentially sit on top of each other, potentially representing a chord
+- bpm: set the beats per minute (default 120)
+- phrase_count: set the number of phrases to be generated (default 1)
+- phrase_notes_count: set the number of notes in each phrase (default 32)
+- note_durations: set the durations of the notes. The durations take integer values like 1, 2, 3 etc, where each integer represents a particular note length. 'd' prefixed to the integer represents a dotted note of that duration. 't' suffixed to an integer represents a triplet of that duration.
+- min_octave: set the minimum octave range (default 1)
+- max_octave: set the maximum octave range (default 5)
+- key: set the key of the scale (default "C")
+- mode: set the mode of the scale (default "major")
+- file_name: set the name of the generated MIDI file (default "C-major-midi-file-<date_str>.mid")
+- output_path: set the output path for the generated MIDI file (default "./")
 
-- `--note_spread`: This option sets how many notes can potentially sit on top of each other, representing a chord. The default value is 1.
-- `--phrase_count`: This option sets how many phrases are in the MIDI file. The default value is 1.
-- `--phrase_notes_count`: This option sets the number of notes in each phrase. The default value is 32.
-- `--note_durations`: This option sets the length of the notes in the generated MIDI file. It accepts a comma-separated list of note lengths in fractions of beats. The default value is "16", representing 1/16 of a beat.
-- `--min_octave`: This option sets the minimum octave range. The default value is 1.
-- `--max_octave`: This option sets the maximum octave range. The default value is 5.
-- `--key`: This option sets the key of the scale. The default value is "C".
-- `--mode`: This option sets the mode of the scale. The default value is "major".
-- `--file_name`: the name of the MIDI file to generate (default: "<key>-<mode>-midi-file-<current date>.mid")
-- `--output_path`: the path to output midi files to
+##### Generating a MIDI Stream
 
+To generate a MIDI stream, set the following parameter:
+- generate_midi_stream: set this parameter to "true" (default is "false"). This will continuously generate MIDI notes until the program is terminated. 
+
+To generate a continuous stream of MIDI notes with the same parameters, use the `generate_midi_stream` flag:
+
+```bash
+./midi-generator-<arch> --key=D# --mode=dorian --note_spread=3 --bpm=140 --velocity=100 --generate_midi_stream="true" --midi_channel=7
+```
 ##### note_durations parameters
 
 Since this is a wrapper around [midi-writer-js](https://www.npmjs.com/package/midi-writer-js), this application accepts the following note_durations options:
@@ -90,3 +101,4 @@ This tool relies on the following dependencies:
 - [midi-writer-js](https://www.npmjs.com/package/midi-writer-js): A MIDI file writer library for Node.js.
 - fs: A Node.js file system module for reading and writing files.
 - [yargs](https://www.npmjs.com/package/yargs): A command line argument parsing library for Node.js.
+- [easymidi](https://www.npmjs.com/package/easymidi): A simple event-based MIDI messaging wrapper for node-midi, used to stream midi over a midi_channel
