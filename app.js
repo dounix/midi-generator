@@ -23,11 +23,11 @@ const phraseCount = argv.phrase_count || 1;
 console.log(`phrase count: ${phraseCount}`)
 
 // set velocity
-const velocity = argv.velocity || 127
+const velocity = Number(argv.velocity) || 127
 console.log(`velocity: ${velocity}`)
 
 //
-const channel = argv.midi_channel || 1
+const channel =  Number(argv.midi_channel) || 1
 console.log(`midi channel: ${channel}`)
 
 // set phrase length
@@ -94,6 +94,8 @@ console.log(`min octave: ${minOctave}`)
 const maxOctave = argv.max_octave || 5;
 console.log(`max octave: ${maxOctave}`)
 
+const skipBeatsChance = Number(argv.skip_beats_chance) || 0.0;
+console.log(`skip beats chance: ${skipBeatsChance}`)
 // set key and mode
 const key = argv.key || "C";
 const mode = argv.mode || "major";
@@ -118,12 +120,21 @@ const generateMidiStream = argv.generate_midi_stream || "false";
 
 var easymidi = require('easymidi');
 
-var output = new easymidi.Output('midi-generator', true);
+var outputs = easymidi.getOutputs();
+var output = new easymidi.Output(outputs[0]);
+// var output = new easymidi.Output('Midi Generator', true);
 
 // function that sends midi notes
-async function sendMidi(notes, velocity = 127, channel = 1, interval) {
+async function sendMidi(notes, velocity, channel, interval) {
   console.log(`midi => ${[notes]}`)
   output.send('clock');
+  output.send('start');
+  // randomly skip notes
+
+  if (skipBeatsChance !== 0.0 && Math.random() > skipBeatsChance) { 
+    return
+  }
+
   for (note of notes) {
     // send midi note on signal
     output.send('noteon', {
@@ -207,6 +218,19 @@ function streamMidi() {
   }, interval)
 }
 
+// handle process signals
+process.on('SIGINT', () => {
+  output.send('stop');
+  process.exit(0)
+});  // CTRL+C
+process.on('SIGQUIT', () => {
+    output.send('stop');
+      process.exit(0)
+}); // Keyboard quit
+process.on('SIGTERM', () => {
+    output.send('stop');
+      process.exit(0)
+}); // `kill` command
 
 // check if the user wants to generate a midi stream
 if (generateMidiStream == "true") {
