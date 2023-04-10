@@ -4,7 +4,7 @@ const fs = require('fs');
 const yargs = require('yargs');
 const hideBin = require('yargs/helpers').hideBin;
 
-// get command line arguments
+
 const argv = yargs(hideBin(process.argv)).argv
 
 // get current date
@@ -14,11 +14,16 @@ const dateStr = date.toISOString()
 // corresponds to how many notes can potentially sit on top of each other, potentially representing a chord
 const noteSpread = argv.note_spread || 1;
 
+// set bpm
 const bpm = argv.bpm || 120;
+console.log(`bpm: ${bpm}`)
 
 // set phrase count
 const phraseCount = argv.phrase_count || 1;
 console.log(`phrase count: ${phraseCount}`)
+
+const velocity = 127
+const channel = 1
 
 // set phrase length
 const phraseNotesCount = argv.phrase_notes_count || 32;
@@ -27,6 +32,56 @@ console.log(`phrase notes count: ${phraseNotesCount}`)
 // set note lengths
 const noteLengths = [(argv.note_durations || "16")].map(l => `${l}`)
 console.log(`note lengths: ${noteLengths}`)
+
+
+function getNotesPerBeat(noteDuration) {
+  switch (noteDuration) {
+    // whole note
+    case "1":
+      return 0.25
+    // half note
+    case "2":
+      return 0.5
+    // dotted half note
+    case "d2":
+      return 0.875
+    // quarter note
+    case "4":
+      return 1
+    // triplet quarter note
+    case "4t":
+      return 1.5
+    // dotted quarter note
+    case "d4":
+      return 1.5
+    case "dd4":
+      return 1.75
+    // eighth note
+    case "8":
+      return 2
+    // triplet eighth note
+    case "8t":
+      return 3
+    // dotted eighth note
+    case "d8":
+      return 3
+    case "dd8":
+      return 3.5
+    // sixteenth note
+    case "16":
+      return 4
+    // triplet sixteenth note
+    case "16t":
+      return 6
+    // thirty-second note
+    case "32":
+      return 8
+    // sixty-fourth note
+    case "64":
+      return 16
+  }
+}
+// get command line arguments
 
 // set octave range
 const minOctave = argv.min_octave || 1;
@@ -54,29 +109,33 @@ const fileName = argv.file_name || `${key}-${mode}-midi-file-${dateStr}.mid`
 // set output path
 let outputPath = argv.output_path || './'
 
-const generateMidiStream = argv.generate_midi_stream || false;
+const generateMidiStream = argv.generate_midi_stream || "false";
 
 var easymidi = require('easymidi');
 
-var outputs = easymidi.getOutputs();
+var output = new easymidi.Output('midi-generator', true);
 
-let output = new easymidi.Output(outputs[0]);
-
-async function sendMidi(notes, velocity = 127, channel = 1) {
+// function that sends midi notes
+async function sendMidi(notes, velocity = 127, channel = 1, interval) {
+  console.log(`midi => ${[notes]}`)
+  output.send('clock');
   for (note of notes) {
-    console.log(note)
     output.send('noteon', {
       note: note,
       velocity: velocity,
       channel: channel
     });
+    setInterval(() => {
+      output.send('noteoff', {
+        note: note,
+        velocity: velocity,
+        channel: channel
+      });
+    }, interval)
   }
 }
-
 // function that sets a repeat interval for a function based off of a bpm and note length
-const setRepeatInterval = (fn, bpm, noteLength) => {
-  const interval = (1000 * 60) / bpm
-  console.log(interval)
+const setRepeatInterval = (fn, interval) => {
   setInterval(fn, interval)
 }
 
@@ -84,7 +143,6 @@ const setRepeatInterval = (fn, bpm, noteLength) => {
 function randomIndex(items) {
   let note = items[items.length * Math.random() | 0];
   let midiNote = Midi.toMidi(note)
-
   let obj = { note, midiNote }
   return obj
 }
@@ -107,7 +165,8 @@ const randomNote = (range) => {
 };
 
 // initialize a new midi track
-const track = new MidiWriter.Track();
+const track = new MidiWriter.Track()
+track.setTempo(bpm)
 
 // generate a beat
 function generateBeat() {
@@ -121,22 +180,23 @@ function generateBeat() {
   return beat
 }
 
-function streamMidi() {
-  let beat = []
-  setRepeatInterval(() => {
-    let randomNotes = randomNote(keyRange)
-    let notes = randomNotes['notes']
-    let midiNotes = randomNotes['midiNotes']
-
-    sendMidi(midiNotes)
-  }, bpm, 1)
-  return beat
-}
 // randomly generate a duration for midi writer
 const randomDuration = () => {
   const duration = noteLengths[Math.floor(Math.random() * noteLengths.length)]
   return duration
 }
+
+function streamMidi() {
+  let duration = randomDuration()
+  let subdivision = getNotesPerBeat(duration)
+  const interval = (1000 * 60) / (bpm * subdivision) // get note frequency in ms
+  setInterval(() => {
+    let randomNotes = randomNote(keyRange)
+    let midiNotes = randomNotes['midiNotes']
+    sendMidi(midiNotes, velocity, channel, interval)
+  }, interval)
+}
+
 
 if (generateMidiStream == "true") {
   // function to continuously call sendMidi to generate a stream of midi notes
@@ -166,9 +226,11 @@ if (outputPath.charAt(outputPath.length - 1) !== '/') {
 
 if (generateMidiStream == "false") {
   const p = `${outputPath}${fileName}`
-  console.log(`output path: ${p}`)
+
   // build the midi file
   let write = new MidiWriter.Writer(track).buildFile()
+  let stream = new MidiWriter.Writer(track).stdout()
+
   fs.writeFileSync(p, write, 'binary')
 
   if (fs.existsSync(p)) {
