@@ -125,12 +125,14 @@ async function sendMidi(notes, velocity = 127, channel = 1, interval) {
   console.log(`midi => ${[notes]}`)
   output.send('clock');
   for (note of notes) {
+    // send midi note on signal
     output.send('noteon', {
       note: note,
       velocity: velocity,
       channel: channel
     });
-    setInterval(() => {
+    // send note off signal after interval time i reached
+    setTimeout(() => {
       output.send('noteoff', {
         note: note,
         velocity: velocity,
