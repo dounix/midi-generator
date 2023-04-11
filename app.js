@@ -4,7 +4,6 @@ const fs = require('fs');
 const yargs = require('yargs');
 const hideBin = require('yargs/helpers').hideBin;
 
-
 const argv = yargs(hideBin(process.argv)).argv
 
 // get current date
@@ -27,7 +26,7 @@ const velocity = Number(argv.velocity) || 127
 console.log(`velocity: ${velocity}`)
 
 //
-const channel =  Number(argv.midi_channel) || 1
+const channel = Number(argv.midi_channel) || 1
 console.log(`midi channel: ${channel}`)
 
 // set phrase length
@@ -88,6 +87,16 @@ function getNotesPerBeat(noteDuration) {
 }
 // get command line arguments
 
+const timeSignature = argv.time_signature || "4/4";
+console.log(`time signature: ${timeSignature}`)
+const timeSignatureArr = timeSignature.split("/")
+const timeSignatureTop = timeSignatureArr[0]
+const timeSignatureBottom = timeSignatureArr[1]
+const notesPerBeat = getNotesPerBeat(noteLengths[0])
+const notesPerMeasure = timeSignatureTop * notesPerBeat
+console.log(`notes per measure: ${notesPerMeasure}`)
+
+
 // set octave range
 const minOctave = argv.min_octave || 1;
 console.log(`min octave: ${minOctave}`)
@@ -123,19 +132,18 @@ var easymidi = require('easymidi');
 var outputs = easymidi.getOutputs();
 var output = new easymidi.Output(outputs[0]);
 // var output = new easymidi.Output('Midi Generator', true);
-
+output.send('clock');
+output.send('start');
 // function that sends midi notes
 async function sendMidi(notes, velocity, channel, interval) {
   console.log(`midi => ${[notes]}`)
-  output.send('clock');
-  output.send('start');
   // randomly skip notes
-
-  if (skipBeatsChance !== 0.0 && Math.random() > skipBeatsChance) { 
-    return
+  // chunk the notes to replicate time signature based off of the notes per measure
+  let chunkedNotes = []
+  for (let i = 0; i < notes.length; i += notesPerMeasure) {
+    chunkedNotes.push(notes.slice(i, i + notesPerMeasure))
   }
-
-  for (note of notes) {
+  for (note of chunkedNotes) {
     // send midi note on signal
     output.send('noteon', {
       note: note,
@@ -224,12 +232,12 @@ process.on('SIGINT', () => {
   process.exit(0)
 });  // CTRL+C
 process.on('SIGQUIT', () => {
-    output.send('stop');
-      process.exit(0)
+  output.send('stop');
+  process.exit(0)
 }); // Keyboard quit
 process.on('SIGTERM', () => {
-    output.send('stop');
-      process.exit(0)
+  output.send('stop');
+  process.exit(0)
 }); // `kill` command
 
 // check if the user wants to generate a midi stream
