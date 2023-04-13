@@ -6,6 +6,10 @@ const hideBin = require('yargs/helpers').hideBin;
 
 const argv = yargs(hideBin(process.argv)).argv
 
+// sleep function
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 // get current date
 const date = new Date();
 const dateStr = date.toISOString()
@@ -103,8 +107,12 @@ console.log(`min octave: ${minOctave}`)
 const maxOctave = argv.max_octave || 5;
 console.log(`max octave: ${maxOctave}`)
 
-const skipBeatsChance = Number(argv.skip_beats_chance) || 0.0;
-console.log(`skip beats chance: ${skipBeatsChance}`)
+// set skip beats chance
+// set to float
+
+const skipNotesChance = parseFloat(argv.skip_notes_chance) || parseFloat(0.0);
+const percentage = (skipNotesChance * 100).toFixed(2)
+console.log(`skip beats chance: ${percentage}%`)
 // set key and mode
 const key = argv.key || "C";
 const mode = argv.mode || "major";
@@ -134,30 +142,33 @@ var output = new easymidi.Output(outputs[0]);
 // var output = new easymidi.Output('Midi Generator', true);
 output.send('clock');
 output.send('start');
+
+
+function getNoteDurationInMs(noteDuration) {
+  const beatDurationInMs = (60 * 1000) / bpm;
+  const notesPerBeat = getNotesPerBeat(noteDuration);
+  return beatDurationInMs / notesPerBeat;
+}
+
 // function that sends midi notes
-async function sendMidi(notes, velocity, channel, interval) {
-  console.log(`midi => ${[notes]}`)
-  // randomly skip notes
-  // chunk the notes to replicate time signature based off of the notes per measure
-  let chunkedNotes = []
-  for (let i = 0; i < notes.length; i += notesPerMeasure) {
-    chunkedNotes.push(notes.slice(i, i + notesPerMeasure))
-  }
-  for (note of chunkedNotes) {
+async function sendMidi(notes, velocity, channel, noteDuration) {
+  console.log(`midi => ${[notes]}`);
+
+  for (const note of notes) {
     // send midi note on signal
-    output.send('noteon', {
+    output.send("noteon", {
       note: note,
       velocity: velocity,
-      channel: channel
+      channel: channel,
     });
-    // send note off signal after interval time i reached
-    setTimeout(() => {
-      output.send('noteoff', {
-        note: note,
-        velocity: velocity,
-        channel: channel
-      });
-    }, interval)
+
+    // send note off signal after noteDuration time is reached
+    await sleep(noteDuration);
+    output.send("noteoff", {
+      note: note,
+      velocity: velocity,
+      channel: channel,
+    });
   }
 }
 
@@ -202,6 +213,10 @@ function generateBeat() {
   return beat
 }
 
+function shouldSkipBeat() {
+  return Math.random() < skipNotesChance;
+}
+
 // randomly generate a duration for midi writer
 const randomDuration = () => {
   const duration = noteLengths[Math.floor(Math.random() * noteLengths.length)]
@@ -209,21 +224,26 @@ const randomDuration = () => {
 }
 
 // function that generates a stream of midi notes
-function streamMidi() {
-  // get a random duration
-  let duration = randomDuration()
-  // get the number of notes per beat
-  let subdivision = getNotesPerBeat(duration)
-  // calculate the interval between notes
-  const interval = (1000 * 60) / (bpm * subdivision) // get note frequency in ms
-  setInterval(() => {
-    // get a range of random notes
-    let randomNotes = randomNote(keyRange)
-    // get the notes midi data
-    let midiNotes = randomNotes['midiNotes']
-    // send the midi notes
-    sendMidi(midiNotes, velocity, channel, interval)
-  }, interval)
+async function streamMidi() {
+  while (true) {
+    for (
+      let measure = 0;
+      measure < phraseNotesCount / notesPerMeasure;
+      measure++
+    ) {
+      for (let noteIndex = 0; noteIndex < notesPerMeasure; noteIndex++) {
+        const randomNotes = randomNote(keyRange);
+        const midiNotes = randomNotes["midiNotes"];
+        const noteDuration = getNoteDurationInMs(randomDuration());
+
+        if (!shouldSkipBeat()) {
+          await sendMidi(midiNotes, velocity, channel, noteDuration);
+        } else {
+          await sleep(noteDuration); // Rest for the duration of the skipped beat
+        }
+      }
+    }
+  }
 }
 
 // handle process signals
