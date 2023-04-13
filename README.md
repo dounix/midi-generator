@@ -46,11 +46,11 @@ To generate MIDI files, the app.js file has various command line parameters. The
 To generate a MIDI stream, set the following parameters:
 - generate_midi_stream: set this parameter to "true" (default is "false"). This will continuously generate MIDI notes until the program is terminated. 
 - skip_notes_chance: set the chance that a notes played in a measure will be randomly skipped (default "0.0", range 0.0 to 0.99)
-To generate a continuous stream of MIDI notes with the same parameters, use the `generate_midi_stream` flag:
 
 ```bash
 ./midi-generator-<arch> --key=D# --mode=dorian --note_spread=3 --bpm=140 --velocity=100 --generate_midi_stream="true" --midi_channel=7
 ```
+
 ##### note_durations parameters
 
 Since this is a wrapper around [midi-writer-js](https://www.npmjs.com/package/midi-writer-js), this application accepts the following note_durations options:
