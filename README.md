@@ -1,6 +1,6 @@
 # MIDI Generator
 
-This is a Node.js project that generates a random MIDI file or streams with a given scale, phrase length, and note lengths. It uses the [tonal](https://www.npmjs.com/package/tonal) and [midi-writer-js](https://www.npmjs.com/package/midi-writer-js) packages to generate MIDI notes and write them to a file.
+MIDI Generator is a Node.js project that generates a random MIDI file or streams with a given scale, phrase length, and note lengths. It uses the [tonal](https://www.npmjs.com/package/tonal) and [midi-writer-js](https://www.npmjs.com/package/midi-writer-js) packages to generate MIDI notes and write them to a file.
 
 ## Usage
 
@@ -43,9 +43,9 @@ To generate MIDI files, the app.js file has various command line parameters. The
 
 ##### Generating a MIDI Stream
 
-To generate a MIDI stream, set the following parameter:
+To generate a MIDI stream, set the following parameters:
 - generate_midi_stream: set this parameter to "true" (default is "false"). This will continuously generate MIDI notes until the program is terminated. 
-
+- skip_notes_chance: set the chance that a notes played in a measure will be randomly skipped (default "0.0", range 0.0 to 0.99)
 To generate a continuous stream of MIDI notes with the same parameters, use the `generate_midi_stream` flag:
 
 ```bash
@@ -102,3 +102,7 @@ This tool relies on the following dependencies:
 - fs: A Node.js file system module for reading and writing files.
 - [yargs](https://www.npmjs.com/package/yargs): A command line argument parsing library for Node.js.
 - [easymidi](https://www.npmjs.com/package/easymidi): A simple event-based MIDI messaging wrapper for node-midi, used to stream midi over a midi_channel
+
+## Contributors
+
+- **Andrew Milam** - [ammilam](https://github.com/ammilam)

@@ -4,9 +4,12 @@ const fs = require('fs');
 const yargs = require('yargs');
 const hideBin = require('yargs/helpers').hideBin;
 
-
 const argv = yargs(hideBin(process.argv)).argv
 
+// sleep function
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 // get current date
 const date = new Date();
 const dateStr = date.toISOString()
@@ -23,11 +26,11 @@ const phraseCount = argv.phrase_count || 1;
 console.log(`phrase count: ${phraseCount}`)
 
 // set velocity
-const velocity = argv.velocity || 127
+const velocity = Number(argv.velocity) || 127
 console.log(`velocity: ${velocity}`)
 
 //
-const channel = argv.midi_channel || 1
+const channel = Number(argv.midi_channel) || 1
 console.log(`midi channel: ${channel}`)
 
 // set phrase length
@@ -88,12 +91,28 @@ function getNotesPerBeat(noteDuration) {
 }
 // get command line arguments
 
+const timeSignature = argv.time_signature || "4/4";
+console.log(`time signature: ${timeSignature}`)
+const timeSignatureArr = timeSignature.split("/")
+const timeSignatureTop = timeSignatureArr[0]
+const timeSignatureBottom = timeSignatureArr[1]
+const notesPerBeat = getNotesPerBeat(noteLengths[0])
+const notesPerMeasure = timeSignatureTop * notesPerBeat
+console.log(`notes per measure: ${notesPerMeasure}`)
+
+
 // set octave range
 const minOctave = argv.min_octave || 1;
 console.log(`min octave: ${minOctave}`)
 const maxOctave = argv.max_octave || 5;
 console.log(`max octave: ${maxOctave}`)
 
+// set skip beats chance
+// set to float
+
+const skipNotesChance = parseFloat(argv.skip_notes_chance) || parseFloat(0.0);
+const percentage = (skipNotesChance * 100).toFixed(2)
+console.log(`skip beats chance: ${percentage}%`)
 // set key and mode
 const key = argv.key || "C";
 const mode = argv.mode || "major";
@@ -118,27 +137,38 @@ const generateMidiStream = argv.generate_midi_stream || "false";
 
 var easymidi = require('easymidi');
 
-var output = new easymidi.Output('midi-generator', true);
+var outputs = easymidi.getOutputs();
+var output = new easymidi.Output(outputs[0]);
+// var output = new easymidi.Output('Midi Generator', true);
+output.send('clock');
+output.send('start');
+
+
+function getNoteDurationInMs(noteDuration) {
+  const beatDurationInMs = (60 * 1000) / bpm;
+  const notesPerBeat = getNotesPerBeat(noteDuration);
+  return beatDurationInMs / notesPerBeat;
+}
 
 // function that sends midi notes
-async function sendMidi(notes, velocity = 127, channel = 1, interval) {
-  console.log(`midi => ${[notes]}`)
-  output.send('clock');
-  for (note of notes) {
+async function sendMidi(notes, velocity, channel, noteDuration) {
+  console.log(`midi => ${[notes]}`);
+
+  for (const note of notes) {
     // send midi note on signal
-    output.send('noteon', {
+    output.send("noteon", {
       note: note,
       velocity: velocity,
-      channel: channel
+      channel: channel,
     });
-    // send note off signal after interval time i reached
-    setTimeout(() => {
-      output.send('noteoff', {
-        note: note,
-        velocity: velocity,
-        channel: channel
-      });
-    }, interval)
+
+    // send note off signal after noteDuration time is reached
+    await sleep(noteDuration);
+    output.send("noteoff", {
+      note: note,
+      velocity: velocity,
+      channel: channel,
+    });
   }
 }
 
@@ -183,6 +213,10 @@ function generateBeat() {
   return beat
 }
 
+function shouldSkipBeat() {
+  return Math.random() < skipNotesChance;
+}
+
 // randomly generate a duration for midi writer
 const randomDuration = () => {
   const duration = noteLengths[Math.floor(Math.random() * noteLengths.length)]
@@ -190,23 +224,41 @@ const randomDuration = () => {
 }
 
 // function that generates a stream of midi notes
-function streamMidi() {
-  // get a random duration
-  let duration = randomDuration()
-  // get the number of notes per beat
-  let subdivision = getNotesPerBeat(duration)
-  // calculate the interval between notes
-  const interval = (1000 * 60) / (bpm * subdivision) // get note frequency in ms
-  setInterval(() => {
-    // get a range of random notes
-    let randomNotes = randomNote(keyRange)
-    // get the notes midi data
-    let midiNotes = randomNotes['midiNotes']
-    // send the midi notes
-    sendMidi(midiNotes, velocity, channel, interval)
-  }, interval)
+async function streamMidi() {
+  while (true) {
+    for (
+      let measure = 0;
+      measure < phraseNotesCount / notesPerMeasure;
+      measure++
+    ) {
+      for (let noteIndex = 0; noteIndex < notesPerMeasure; noteIndex++) {
+        const randomNotes = randomNote(keyRange);
+        const midiNotes = randomNotes["midiNotes"];
+        const noteDuration = getNoteDurationInMs(randomDuration());
+
+        if (!shouldSkipBeat()) {
+          await sendMidi(midiNotes, velocity, channel, noteDuration);
+        } else {
+          await sleep(noteDuration); // Rest for the duration of the skipped beat
+        }
+      }
+    }
+  }
 }
 
+// handle process signals
+process.on('SIGINT', () => {
+  output.send('stop');
+  process.exit(0)
+});  // CTRL+C
+process.on('SIGQUIT', () => {
+  output.send('stop');
+  process.exit(0)
+}); // Keyboard quit
+process.on('SIGTERM', () => {
+  output.send('stop');
+  process.exit(0)
+}); // `kill` command
 
 // check if the user wants to generate a midi stream
 if (generateMidiStream == "true") {
